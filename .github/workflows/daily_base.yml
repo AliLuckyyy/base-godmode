@@ -1,0 +1,32 @@
+name: Daily Base Godmode
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # هر روز UTC ساعت 00:00 اجرا میشه
+  workflow_dispatch:     # امکان اجرای دستی هم هست
+
+jobs:
+  daily_code:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Run daily script
+        run: python daily_base.py
+
+      - name: Commit and Push
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          git config --local user.name "github-actions"
+          git config --local user.email "actions@github.com"
+          git add daily_code_*.py
+          git commit -m "Add daily code for $(date +'%Y-%m-%d')" || echo "No changes"
+          git push https://$GH_PAT@github.com/AliLuckyyy/base-godmode.git HEAD:main
